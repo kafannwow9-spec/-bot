@@ -3,26 +3,43 @@ import { getPoints } from '../points.js';
 
 export const data = new SlashCommandBuilder()
     .setName('leaderboard')
-    .setDescription('عرض توب النقاط');
+    .setDescription('عرض توب النقاط')
+    .addStringOption(option =>
+        option.setName('filter')
+            .setDescription('الفترة الزمنية')
+            .setRequired(false)
+            .addChoices(
+                { name: 'يومي', value: 'daily' },
+                { name: 'أسبوعي', value: 'weekly' },
+                { name: 'شهري', value: 'monthly' }
+            ));
 
 export async function execute(interaction) {
-    const points = getPoints();
+    const filter = interaction.options.getString('filter') || 'total';
+    const points = getPoints(filter);
     
+    const filterLabels = {
+        total: 'الكل',
+        daily: 'اليومي',
+        weekly: 'الأسبوعي',
+        monthly: 'الشهري'
+    };
+
     // Sort points and get top 10
     const sortedPoints = Object.entries(points)
         .sort(([, a], [, b]) => b - a)
         .slice(0, 10);
 
     if (sortedPoints.length === 0) {
-        return interaction.reply({ content: 'لا يوجد نقاط مسجلة بعد.', ephemeral: true });
+        return interaction.reply({ content: 'لا يوجد نقاط مسجلة لهذه الفترة.', ephemeral: true });
     }
 
-    const container = new ContainerBuilder()
-        .setAccentColor(0x0099ff);
+    const container = new ContainerBuilder();
+    // Removed setAccentColor as requested
 
     // Add Title
     container.addTextDisplayComponents((text) => 
-        text.setContent('**🏆 تـوب الـنــقـاط**')
+        text.setContent(`**🏆 تـوب الـنــقـاط (${filterLabels[filter]})**`)
     );
 
     container.addSeparatorComponents((s) => s);
