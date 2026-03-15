@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
 
 export const data = new SlashCommandBuilder()
     .setName('ban')
@@ -9,9 +9,9 @@ export const data = new SlashCommandBuilder()
             .setRequired(true))
     .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers);
 
-export async function execute(interaction: ChatInputCommandInteraction) {
+export async function execute(interaction) {
     const target = interaction.options.getUser('target');
-    const member = await interaction.guild?.members.fetch(target!.id);
+    const member = await interaction.guild?.members.fetch(target.id);
 
     if (!member) {
         return interaction.reply({ content: 'لم يتم العثور على هذا العضو.', ephemeral: true });
@@ -22,5 +22,5 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     }
 
     await member.ban();
-    await interaction.reply(`**لــقـد تـم حــظـر #${target?.username} مــن الــسـيرفـر <:ban:1482739850611523737> ! **`);
+    await interaction.reply(`**لــقـد تـم حــظـر #${target.username} مــن الــسـيرفـر <:ban:1482739850611523737> ! **`);
 }

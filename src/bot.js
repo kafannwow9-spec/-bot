@@ -15,14 +15,14 @@ const client = new Client({
     ],
 });
 
-const commands = new Collection<string, any>();
+const commands = new Collection();
 const commandList = [ban, unban, timeout, untimeout, warn, unwarn, warnings];
 
 for (const command of commandList) {
     commands.set(command.data.name, command);
 }
 
-export async function startBot(token: string, clientId: string) {
+export async function startBot(token, clientId) {
     client.once('ready', () => {
         console.log(`Logged in as ${client.user?.tag}!`);
     });
@@ -37,7 +37,11 @@ export async function startBot(token: string, clientId: string) {
             await command.execute(interaction);
         } catch (error) {
             console.error(error);
-            await interaction.reply({ content: 'حدث خطأ أثناء تنفيذ الأمر!', ephemeral: true });
+            if (interaction.replied || interaction.deferred) {
+                await interaction.followUp({ content: 'حدث خطأ أثناء تنفيذ الأمر!', ephemeral: true });
+            } else {
+                await interaction.reply({ content: 'حدث خطأ أثناء تنفيذ الأمر!', ephemeral: true });
+            }
         }
     });
 

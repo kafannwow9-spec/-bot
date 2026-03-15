@@ -30,7 +30,7 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Web server running on http://localhost:${PORT}`);
+    console.log(`Web server running on port ${PORT}`);
     
     const token = process.env.DISCORD_TOKEN;
     const clientId = process.env.CLIENT_ID;
@@ -38,6 +38,6 @@ app.listen(PORT, '0.0.0.0', () => {
     if (token && clientId) {
         startBot(token, clientId).catch(console.error);
     } else {
-        console.warn('DISCORD_TOKEN or CLIENT_ID is missing in .env file.');
+        console.warn('DISCORD_TOKEN or CLIENT_ID is missing in environment variables.');
     }
 });
