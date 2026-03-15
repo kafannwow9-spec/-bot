@@ -8,6 +8,7 @@ import * as unwarn from './commands/unwarn.js';
 import * as warnings from './commands/warnings.js';
 import * as setupMod from './commands/setup-mod.js';
 import * as points from './commands/points.js';
+import * as leaderboard from './commands/leaderboard.js';
 
 const client = new Client({
     intents: [
@@ -18,7 +19,7 @@ const client = new Client({
 });
 
 const commands = new Collection();
-const commandList = [ban, unban, timeout, untimeout, warn, unwarn, warnings, setupMod, points];
+const commandList = [ban, unban, timeout, untimeout, warn, unwarn, warnings, setupMod, points, leaderboard];
 
 for (const command of commandList) {
     commands.set(command.data.name, command);

@@ -16,10 +16,10 @@ export async function execute(interaction) {
 
     const embed = new EmbedBuilder()
         .setColor(0x0099ff) // Blue color
-        .setDescription(`**عــدد نــقـاطـك هـو \`${userPoints} <:Points:1482767197972463749>\`**`);
+        .setDescription(`**عــدد نــقـاطـك هـو \`${userPoints}\` <:Points:1482767197972463749>**`);
 
     if (target.id !== interaction.user.id) {
-        embed.setDescription(`**عــدد نــقـاط <@${target.id}> هـو \`${userPoints} <:Points:1482767197972463749>\`**`);
+        embed.setDescription(`**عــدد نــقـاط <@${target.id}> هـو \`${userPoints}\` <:Points:1482767197972463749>**`);
     }
 
     await interaction.reply({ embeds: [embed] });
