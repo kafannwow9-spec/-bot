@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Collection, REST, Routes, ActivityType, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, StringSelectMenuBuilder, PermissionFlagsBits } from 'discord.js';
+import { Client, GatewayIntentBits, Collection, REST, Routes, ActivityType, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, StringSelectMenuBuilder, PermissionFlagsBits, MessageFlags } from 'discord.js';
 import * as ban from './commands/ban.js';
 import * as unban from './commands/unban.js';
 import * as timeout from './commands/timeout.js';
@@ -173,6 +173,7 @@ export async function startBot(token, clientId) {
 
         // Create a mock interaction
         const mockInteraction = {
+            id: message.id,
             user: message.author,
             member: message.member,
             guild: message.guild,
@@ -180,26 +181,51 @@ export async function startBot(token, clientId) {
             channel: message.channel,
             replied: false,
             deferred: false,
+            isRepliable: () => true,
             options: {
                 getUser: (name) => {
                     const mention = message.mentions.users.first();
                     if (mention) return mention;
-                    // Try to find by ID in args
                     const id = args.find(a => /^\d+$/.test(a));
                     if (id) return client.users.cache.get(id);
                     return null;
                 },
+                getMember: async (name) => {
+                    const user = mockInteraction.options.getUser(name);
+                    if (!user) return null;
+                    return await message.guild.members.fetch(user.id);
+                },
                 getString: (name) => {
-                    if (name === 'duration') return args[1] || args[0]; // Simple heuristic
-                    if (name === 'reason') return args.slice(2).join(' ') || args.slice(1).join(' ');
+                    if (name === 'duration') {
+                        // Find first arg that looks like a duration (not a mention/ID)
+                        return args.find(a => !a.startsWith('<@') && !/^\d+$/.test(a)) || args[0];
+                    }
+                    if (name === 'reason') {
+                        // Everything after the user/duration
+                        const userIndex = args.findIndex(a => a.startsWith('<@') || /^\d+$/.test(a));
+                        const durationIndex = args.findIndex(a => !a.startsWith('<@') && !/^\d+$/.test(a));
+                        const startIndex = Math.max(userIndex, durationIndex) + 1;
+                        return args.slice(startIndex).join(' ') || args.slice(1).join(' ');
+                    }
                     if (name === 'filter') return args[0];
                     return args[0];
-                }
+                },
+                getInteger: (name) => parseInt(args.find(a => /^\d+$/.test(a))) || 0,
+                getNumber: (name) => parseFloat(args.find(a => /^-?\d*\.?\d+$/.test(a))) || 0,
+                getBoolean: (name) => args.includes('true') || args.includes('yes')
             },
             reply: async (options) => {
+                mockInteraction.replied = true;
                 if (typeof options === 'string') {
                     return message.reply(options);
                 }
+                return message.reply(options);
+            },
+            deferReply: async (options) => {
+                mockInteraction.deferred = true;
+                return; // No-op for text commands
+            },
+            editReply: async (options) => {
                 return message.reply(options);
             },
             followUp: async (options) => {
