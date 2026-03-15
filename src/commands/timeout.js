@@ -1,5 +1,7 @@
 import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
 import ms from 'ms';
+import { hasModPermission } from '../config.js';
+import { addPoints } from '../points.js';
 
 export const data = new SlashCommandBuilder()
     .setName('timeout')
@@ -15,10 +17,12 @@ export const data = new SlashCommandBuilder()
     .addStringOption(option => 
         option.setName('reason')
             .setDescription('السبب (اختياري)')
-            .setRequired(false))
-    .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers);
+            .setRequired(false));
 
 export async function execute(interaction) {
+    if (!hasModPermission(interaction.member, interaction.guildId)) {
+        return interaction.reply({ content: 'ليس لديك صلاحية استخدام هذا الأمر.', ephemeral: true });
+    }
     const target = interaction.options.getUser('target');
     const durationStr = interaction.options.getString('duration');
     const reason = interaction.options.getString('reason') || 'لا يوجد سبب';
@@ -33,6 +37,7 @@ export async function execute(interaction) {
 
     try {
         await member.timeout(duration, reason);
+        addPoints(interaction.user.id, 1);
         await interaction.reply(`**تــم إعـطــاء وقــت مــسـتــقـطــع لـ**<@${target.id}> <:Timeout:1482741555516407990>`);
     } catch (error) {
         return interaction.reply({ content: 'لا يمكنني إعطاء وقت مستقطع لهذا العضو.', ephemeral: true });

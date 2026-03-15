@@ -1,4 +1,5 @@
 import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
+import { hasModPermission } from '../config.js';
 
 export const data = new SlashCommandBuilder()
     .setName('untimeout')
@@ -6,10 +7,12 @@ export const data = new SlashCommandBuilder()
     .addUserOption(option => 
         option.setName('target')
             .setDescription('العضو')
-            .setRequired(true))
-    .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers);
+            .setRequired(true));
 
 export async function execute(interaction) {
+    if (!hasModPermission(interaction.member, interaction.guildId)) {
+        return interaction.reply({ content: 'ليس لديك صلاحية استخدام هذا الأمر.', ephemeral: true });
+    }
     const target = interaction.options.getUser('target');
     const member = await interaction.guild?.members.fetch(target.id);
 

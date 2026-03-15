@@ -1,6 +1,8 @@
 import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
+import { hasModPermission } from '../config.js';
+import { addPoints } from '../points.js';
 
 const warningsPath = path.resolve('warnings.json');
 
@@ -27,10 +29,12 @@ export const data = new SlashCommandBuilder()
     .addStringOption(option => 
         option.setName('reason')
             .setDescription('سبب التحذير')
-            .setRequired(true))
-    .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers);
+            .setRequired(true));
 
 export async function execute(interaction) {
+    if (!hasModPermission(interaction.member, interaction.guildId)) {
+        return interaction.reply({ content: 'ليس لديك صلاحية استخدام هذا الأمر.', ephemeral: true });
+    }
     const target = interaction.options.getUser('target');
     const reason = interaction.options.getString('reason');
 
@@ -46,6 +50,7 @@ export async function execute(interaction) {
 
     warnings[target.id].push(warning);
     saveWarnings(warnings);
+    addPoints(interaction.user.id, 1);
 
     await interaction.reply(`**لــقـد تــم تــحـذيـر <@${target.id}> <:warn:1482744209000894657>**`);
 }

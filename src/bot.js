@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Collection, REST, Routes } from 'discord.js';
+import { Client, GatewayIntentBits, Collection, REST, Routes, ActivityType } from 'discord.js';
 import * as ban from './commands/ban.js';
 import * as unban from './commands/unban.js';
 import * as timeout from './commands/timeout.js';
@@ -6,6 +6,8 @@ import * as untimeout from './commands/untimeout.js';
 import * as warn from './commands/warn.js';
 import * as unwarn from './commands/unwarn.js';
 import * as warnings from './commands/warnings.js';
+import * as setupMod from './commands/setup-mod.js';
+import * as points from './commands/points.js';
 
 const client = new Client({
     intents: [
@@ -16,7 +18,7 @@ const client = new Client({
 });
 
 const commands = new Collection();
-const commandList = [ban, unban, timeout, untimeout, warn, unwarn, warnings];
+const commandList = [ban, unban, timeout, untimeout, warn, unwarn, warnings, setupMod, points];
 
 for (const command of commandList) {
     commands.set(command.data.name, command);
@@ -25,6 +27,7 @@ for (const command of commandList) {
 export async function startBot(token, clientId) {
     client.once('ready', () => {
         console.log(`Logged in as ${client.user?.tag}!`);
+        client.user.setActivity('made by b9r2', { type: ActivityType.Playing });
     });
 
     client.on('interactionCreate', async interaction => {
