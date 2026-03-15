@@ -18,10 +18,8 @@ export const data = new SlashCommandBuilder()
     .setDescription('إدارة مشغلات الأوامر الكتابية')
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
 
-export async function execute(interaction) {
-    const abbrevs = getAbbreviations();
+export function createAbbreviationsContainer(abbrevs) {
     const commandNames = ['ban', 'unban', 'timeout', 'untimeout', 'warn', 'unwarn', 'warnings', 'points', 'leaderboard'];
-
     const container = new ContainerBuilder()
         .setAccentColor(0x0099ff);
 
@@ -34,11 +32,11 @@ export async function execute(interaction) {
     commandNames.forEach((cmd, index) => {
         const cmdAbbrevs = Object.entries(abbrevs)
             .filter(([, target]) => target === cmd)
-            .map(([alias]) => `\`${alias}\``)
-            .join(', ') || 'لا يوجد أوامر بعد';
+            .map(([alias]) => `- ** ${alias} **`)
+            .join('\n') || 'لا يوجد أوامر بعد';
 
         container.addTextDisplayComponents((text) => 
-            text.setContent(`**** ${cmd} ****\n${cmdAbbrevs}`)
+            text.setContent(`** ${cmd} **\n${cmdAbbrevs}`)
         );
 
         if (index < commandNames.length - 1) {
@@ -52,6 +50,12 @@ export async function execute(interaction) {
         .addOptions(commandNames.map(cmd => ({ label: cmd, value: cmd })));
 
     container.addActionRowComponents((row) => row.setComponents(selectMenu));
+    return container;
+}
+
+export async function execute(interaction) {
+    const abbrevs = getAbbreviations();
+    const container = createAbbreviationsContainer(abbrevs);
 
     const editBtn = new ButtonBuilder()
         .setCustomId('edit_abbrev_btn')

@@ -11,6 +11,20 @@ import * as points from './commands/points.js';
 import * as leaderboard from './commands/leaderboard.js';
 import * as abbreviations from './commands/abbreviations.js';
 import { getAbbreviations, addAbbreviation, removeAbbreviation } from './abbreviations.js';
+import ms from 'ms';
+
+async function updateAbbreviationsMessage(interaction) {
+    const abbrevs = getAbbreviations();
+    const container = abbreviations.createAbbreviationsContainer(abbrevs);
+    
+    // The original message is interaction.message
+    if (interaction.message) {
+        await interaction.message.edit({
+            components: [container, interaction.message.components[1]],
+            flags: MessageFlags.IsComponentsV2
+        });
+    }
+}
 
 const client = new Client({
     intents: [
@@ -73,6 +87,7 @@ export async function startBot(token, clientId) {
                 const alias = interaction.values[0];
                 removeAbbreviation(alias);
                 await interaction.reply({ content: `تم إزالة المشغل \`${alias}\` بنجاح.`, ephemeral: true });
+                await updateAbbreviationsMessage(interaction);
             } else if (interaction.customId === 'edit_abbrev_select') {
                 if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
                     return interaction.reply({ content: 'فقط المسؤولين يمكنهم استخدام هذا.', ephemeral: true });
@@ -128,6 +143,7 @@ export async function startBot(token, clientId) {
                 const alias = interaction.fields.getTextInputValue('abbrev_input');
                 addAbbreviation(alias, cmdName);
                 await interaction.reply({ content: `تم إضافة المشغل \`${alias}\` للأمر \`${cmdName}\` بنجاح.`, ephemeral: true });
+                await updateAbbreviationsMessage(interaction);
             } else if (interaction.customId.startsWith('modal_edit_abbrev_')) {
                 const oldAlias = interaction.customId.replace('modal_edit_abbrev_', '');
                 const newAlias = interaction.fields.getTextInputValue('abbrev_new_input');
@@ -136,6 +152,7 @@ export async function startBot(token, clientId) {
                 removeAbbreviation(oldAlias);
                 addAbbreviation(newAlias, cmdName);
                 await interaction.reply({ content: `تم تعديل المشغل من \`${oldAlias}\` إلى \`${newAlias}\` بنجاح.`, ephemeral: true });
+                await updateAbbreviationsMessage(interaction);
             }
         }
     });
@@ -144,26 +161,57 @@ export async function startBot(token, clientId) {
         if (message.author.bot || !message.guild) return;
 
         const args = message.content.split(/\s+/);
-        const alias = args.shift()?.toLowerCase();
-        if (!alias) return;
+        const firstArg = args.shift();
+        if (!firstArg) return;
 
         const abbrevs = getAbbreviations();
-        const cmdName = abbrevs[alias];
+        const cmdName = abbrevs[firstArg.toLowerCase()];
         if (!cmdName) return;
 
         const command = commands.get(cmdName);
         if (!command) return;
 
-        // Mock interaction for text-based triggers
-        // Note: This is a simplified implementation. Real text-to-slash conversion is complex.
-        // We will manually call the execute function with a fake interaction object or handle logic separately.
-        // For this app, we'll try to adapt the command execution.
-        
-        // Since our commands rely on interaction.options, we need to provide a way to parse args.
-        // Let's add a helper to commands or handle it here.
-        
-        // For now, let's just notify that text triggers are being processed.
-        // To make it work properly, we'd need to refactor commands to accept (member, options) instead of just interaction.
+        // Create a mock interaction
+        const mockInteraction = {
+            user: message.author,
+            member: message.member,
+            guild: message.guild,
+            guildId: message.guildId,
+            channel: message.channel,
+            replied: false,
+            deferred: false,
+            options: {
+                getUser: (name) => {
+                    const mention = message.mentions.users.first();
+                    if (mention) return mention;
+                    // Try to find by ID in args
+                    const id = args.find(a => /^\d+$/.test(a));
+                    if (id) return client.users.cache.get(id);
+                    return null;
+                },
+                getString: (name) => {
+                    if (name === 'duration') return args[1] || args[0]; // Simple heuristic
+                    if (name === 'reason') return args.slice(2).join(' ') || args.slice(1).join(' ');
+                    if (name === 'filter') return args[0];
+                    return args[0];
+                }
+            },
+            reply: async (options) => {
+                if (typeof options === 'string') {
+                    return message.reply(options);
+                }
+                return message.reply(options);
+            },
+            followUp: async (options) => {
+                return message.reply(options);
+            }
+        };
+
+        try {
+            await command.execute(mockInteraction);
+        } catch (error) {
+            console.error('Error executing text command:', error);
+        }
     });
 
     // Register Slash Commands
