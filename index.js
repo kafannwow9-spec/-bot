@@ -1,14 +1,14 @@
-import express from 'express';
+import http from 'http';
 import dotenv from 'dotenv';
 import { startBot } from './src/bot.js';
 
 dotenv.config();
 
-const app = express();
 const PORT = 3000;
 
-app.get('/', (req, res) => {
-    res.send(`
+const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(`
         <html>
             <head>
                 <title>Discord Bot Status</title>
@@ -29,7 +29,7 @@ app.get('/', (req, res) => {
     `);
 });
 
-app.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, '0.0.0.0', () => {
     console.log(`Web server running on port ${PORT}`);
     
     const token = process.env.DISCORD_TOKEN;
