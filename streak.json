@@ -1,6 +1,91 @@
 {
   "1477677044790722791": {
     "channelId": "1480675447934287984",
-    "users": {}
+    "users": {
+      "1140710099409711154": {
+        "count": 24,
+        "shields": 3,
+        "lastDate": "2026-03-16",
+        "lastShieldReset": "2026-03-16"
+      },
+      "889406126247018506": {
+        "count": 8,
+        "shields": 3,
+        "lastDate": "2026-03-16",
+        "lastShieldReset": "2026-03-16"
+      },
+      "1133389691689902100": {
+        "count": 5,
+        "shields": 3,
+        "lastDate": "2026-03-15",
+        "lastShieldReset": "2026-03-16"
+      },
+      "1448017565929570518": {
+        "count": 6,
+        "shields": 3,
+        "lastDate": "2026-03-16",
+        "lastShieldReset": "2026-03-16"
+      },
+      "980956916706586635": {
+        "count": 2,
+        "shields": 3,
+        "lastDate": "2026-03-15",
+        "lastShieldReset": "2026-03-16"
+      },
+      "1179133837930938470": {
+        "count": 2,
+        "shields": 3,
+        "lastDate": "2026-03-16",
+        "lastShieldReset": "2026-03-16"
+      },
+      "1218511738513657898": {
+        "count": 1,
+        "shields": 3,
+        "lastDate": "2026-03-16",
+        "lastShieldReset": "2026-03-16"
+      },
+      "1259171738382766185": {
+        "count": 1,
+        "shields": 3,
+        "lastDate": "2026-03-16",
+        "lastShieldReset": "2026-03-16"
+      },
+      "846118763514298398": {
+        "count": 1,
+        "shields": 3,
+        "lastDate": "2026-03-16",
+        "lastShieldReset": "2026-03-16"
+      },
+      "768811437534609479": {
+        "count": 1,
+        "shields": 3,
+        "lastDate": "2026-03-16",
+        "lastShieldReset": "2026-03-16"
+      },
+      "1339514990016860202": {
+        "count": 1,
+        "shields": 3,
+        "lastDate": "2026-03-16",
+        "lastShieldReset": "2026-03-16"
+      },
+      "917938635121262622": {
+        "count": 1,
+        "shields": 3,
+        "lastDate": "2026-03-16",
+        "lastShieldReset": "2026-03-16"
+      },
+      "932650196221976646": {
+        "count": 1,
+        "shields": 3,
+        "lastDate": "2026-03-16",
+        "lastShieldReset": "2026-03-16"
+      },
+      "1462092145262329928": {
+        "count": 1,
+        "shields": 3,
+        "lastDate": "2026-03-16",
+        "lastShieldReset": "2026-03-16"
+      }
+    }
   }
 }

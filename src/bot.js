@@ -11,6 +11,7 @@ import * as points from './commands/points.js';
 import * as leaderboard from './commands/leaderboard.js';
 import * as abbreviations from './commands/abbreviations.js';
 import * as streak from './commands/streak.js';
+import * as topstreak from './commands/topstreak.js';
 import { getAbbreviations, addAbbreviation, removeAbbreviation } from './abbreviations.js';
 import { updateStreak } from './streak.js';
 import ms from 'ms';
@@ -42,7 +43,7 @@ const client = new Client({
 });
 
 const commands = new Collection();
-const commandList = [ban, unban, timeout, untimeout, warn, unwarn, warnings, setupMod, points, leaderboard, abbreviations, streak];
+const commandList = [ban, unban, timeout, untimeout, warn, unwarn, warnings, setupMod, points, leaderboard, abbreviations, streak, topstreak];
 
 for (const command of commandList) {
     commands.set(command.data.name, command);
@@ -125,6 +126,17 @@ export async function startBot(token, clientId) {
 
                 modal.addComponents(new ActionRowBuilder().addComponents(input));
                 await interaction.showModal(modal);
+            } else if (interaction.customId === 'topstreak_page_select') {
+                const page = parseInt(interaction.values[0]);
+                const { container, row } = topstreak.createTopStreakContainer(interaction.guildId, page, interaction.user.id);
+                if (container) {
+                    const components = [container];
+                    if (row) components.push(row);
+                    await interaction.update({
+                        components,
+                        flags: MessageFlags.IsComponentsV2
+                    });
+                }
             }
         } else if (interaction.isButton()) {
             if (interaction.customId === 'delete_abbrev_btn') {
