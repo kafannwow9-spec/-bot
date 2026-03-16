@@ -5,7 +5,7 @@ export const data = new SlashCommandBuilder()
     .setName('topstreak')
     .setDescription('عرض توب الستريك');
 
-export function createTopStreakContainer(guildId, page = 0, currentUserId = null) {
+export async function createTopStreakContainer(client, guildId, page = 0, currentUserId = null) {
     const data = getStreakData();
     const guildData = data[guildId];
     if (!guildData || !guildData.users || Object.keys(guildData.users).length === 0) {
@@ -33,7 +33,14 @@ export function createTopStreakContainer(guildId, page = 0, currentUserId = null
         const user = pageUsers[i];
         const rank = start + i + 1;
         const isCurrentUser = user.id === currentUserId;
-        const content = `#${rank} ~ <@${user.id}> ・<:Streak:1483068555514744902> **${user.count}**`;
+        
+        let username = 'عضو غير معروف';
+        try {
+            const fetchedUser = await client.users.fetch(user.id);
+            username = fetchedUser.username;
+        } catch (e) {}
+
+        const content = `#${rank} ~ **${username}** ・<:Streak:1483068555514744902> **${user.count}**`;
         
         container.addTextDisplayComponents((text) => 
             text.setContent(isCurrentUser ? `- **${content}**` : `- ${content}`)
@@ -49,9 +56,15 @@ export function createTopStreakContainer(guildId, page = 0, currentUserId = null
     if (userRank > 10 && page === 0) {
         const currentUserData = guildData.users[currentUserId];
         if (currentUserData) {
+            let username = 'عضو غير معروف';
+            try {
+                const fetchedUser = await client.users.fetch(currentUserId);
+                username = fetchedUser.username;
+            } catch (e) {}
+
             container.addSeparatorComponents((s) => s);
             container.addTextDisplayComponents((text) => 
-                text.setContent(`\n— **<@${currentUserId}> ・<:Streak:1483068555514744902> ${currentUserData.count}**`)
+                text.setContent(`\n— **${username} ・<:Streak:1483068555514744902> ${currentUserData.count}**`)
             );
         }
     }
@@ -79,16 +92,17 @@ export function createTopStreakContainer(guildId, page = 0, currentUserId = null
 }
 
 export async function execute(interaction) {
-    const { container, row } = createTopStreakContainer(interaction.guildId, 0, interaction.user.id);
+    await interaction.deferReply();
+    const { container, row } = await createTopStreakContainer(interaction.client, interaction.guildId, 0, interaction.user.id);
     
     if (!container) {
-        return interaction.reply({ content: 'لا يوجد بيانات ستريك مسجلة في هذا السيرفر.', flags: MessageFlags.Ephemeral });
+        return interaction.editReply({ content: 'لا يوجد بيانات ستريك مسجلة في هذا السيرفر.' });
     }
 
     const components = [container];
     if (row) components.push(row);
 
-    await interaction.reply({
+    await interaction.editReply({
         components,
         flags: MessageFlags.IsComponentsV2
     });

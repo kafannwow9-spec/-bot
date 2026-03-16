@@ -31,11 +31,12 @@ export async function execute(interaction) {
     if (!hasModPermission(interaction.member, interaction.guildId)) {
         return interaction.reply({ content: 'ليس لديك صلاحية استخدام هذا الأمر.', flags: MessageFlags.Ephemeral });
     }
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const target = interaction.options.getUser('target');
     const warnings = getWarnings();
 
     if (!warnings[target.id] || warnings[target.id].length === 0) {
-        return interaction.reply({ content: 'هذا العضو ليس لديه أي تحذيرات.', flags: MessageFlags.Ephemeral });
+        return interaction.editReply({ content: 'هذا العضو ليس لديه أي تحذيرات.' });
     }
 
     const options = warnings[target.id].map((w, index) => ({
@@ -51,10 +52,9 @@ export async function execute(interaction) {
 
     const row = new ActionRowBuilder().addComponents(selectMenu);
 
-    const response = await interaction.reply({
-        content: `تحذيرات <@${target.id}>:`,
-        components: [row],
-        flags: MessageFlags.Ephemeral
+    const response = await interaction.editReply({
+        content: `تحذيرات \`${target.username}\`:`,
+        components: [row]
     });
 
     const collector = response.createMessageComponentCollector({
@@ -70,7 +70,7 @@ export async function execute(interaction) {
                 currentWarnings[target.id] = currentWarnings[target.id].filter((w) => w.id !== warningId);
                 saveWarnings(currentWarnings);
 
-                addLog(i.guildId, 'unwarn', {
+                addLog(i.guild, 'unwarn', {
                     adminId: i.user.id,
                     targetId: target.id,
                     reason: 'إزالة تحذير'

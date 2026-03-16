@@ -24,29 +24,30 @@ export async function execute(interaction) {
     if (!hasModPermission(interaction.member, interaction.guildId)) {
         return interaction.reply({ content: 'ليس لديك صلاحية استخدام هذا الأمر.', flags: MessageFlags.Ephemeral });
     }
+    await interaction.deferReply();
     const target = interaction.options.getUser('target');
     const durationStr = interaction.options.getString('duration');
     const reason = interaction.options.getString('reason') || 'لا يوجد سبب';
 
     const member = await interaction.guild?.members.fetch(target.id);
-    if (!member) return interaction.reply({ content: 'العضو غير موجود.', flags: MessageFlags.Ephemeral });
+    if (!member) return interaction.editReply({ content: 'العضو غير موجود.' });
 
     const duration = ms(durationStr);
     if (!duration || duration < 5000 || duration > 2419200000) {
-        return interaction.reply({ content: 'مدة غير صالحة. يجب أن تكون بين 5 ثوانٍ و 28 يوماً.', flags: MessageFlags.Ephemeral });
+        return interaction.editReply({ content: 'مدة غير صالحة. يجب أن تكون بين 5 ثوانٍ و 28 يوماً.' });
     }
 
     try {
         await member.timeout(duration, reason);
         addPoints(interaction.user.id, 1);
-        addLog(interaction.guildId, 'timeout', {
+        addLog(interaction.guild, 'timeout', {
             adminId: interaction.user.id,
             targetId: target.id,
             duration: durationStr,
             reason: reason
         });
-        await interaction.reply(`**تــم إعـطــاء وقــت مــسـتــقـطــع لـ**<@${target.id}> <:Timeout:1482741555516407990>`);
+        await interaction.editReply(`**تــم إعـطــاء وقــت مــسـتــقـطــع لـ <@${target.id}>** <:Timeout:1482741555516407990>`);
     } catch (error) {
-        return interaction.reply({ content: 'لا يمكنني إعطاء وقت مستقطع لهذا العضو.', flags: MessageFlags.Ephemeral });
+        return interaction.editReply({ content: 'لا يمكنني إعطاء وقت مستقطع لهذا العضو.' });
     }
 }

@@ -36,6 +36,7 @@ export async function execute(interaction) {
     if (!hasModPermission(interaction.member, interaction.guildId)) {
         return interaction.reply({ content: 'ليس لديك صلاحية استخدام هذا الأمر.', flags: MessageFlags.Ephemeral });
     }
+    await interaction.deferReply();
     const target = interaction.options.getUser('target');
     const reason = interaction.options.getString('reason');
 
@@ -52,11 +53,11 @@ export async function execute(interaction) {
     warnings[target.id].push(warning);
     saveWarnings(warnings);
     addPoints(interaction.user.id, 1);
-    addLog(interaction.guildId, 'warn', {
+    addLog(interaction.guild, 'warn', {
         adminId: interaction.user.id,
         targetId: target.id,
         reason: reason
     });
 
-    await interaction.reply(`**لــقـد تــم تــحـذيـر <@${target.id}> <:warn:1482744209000894657>**`);
+    await interaction.editReply(`**لــقـد تــم تــحـذيـر <@${target.id}> <:warn:1482744209000894657>**`);
 }

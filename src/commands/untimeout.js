@@ -14,20 +14,21 @@ export async function execute(interaction) {
     if (!hasModPermission(interaction.member, interaction.guildId)) {
         return interaction.reply({ content: 'ليس لديك صلاحية استخدام هذا الأمر.', flags: MessageFlags.Ephemeral });
     }
+    await interaction.deferReply();
     const target = interaction.options.getUser('target');
     const member = await interaction.guild?.members.fetch(target.id);
 
-    if (!member) return interaction.reply({ content: 'العضو غير موجود.', flags: MessageFlags.Ephemeral });
+    if (!member) return interaction.editReply({ content: 'العضو غير موجود.' });
 
     try {
         await member.timeout(null);
-        addLog(interaction.guildId, 'untimeout', {
+        addLog(interaction.guild, 'untimeout', {
             adminId: interaction.user.id,
             targetId: target.id,
             reason: 'فك التايم أوت'
         });
-        await interaction.reply(`**تــم فــك الـتـايــم اوت عـن **__#${target.username}__ <:Talk:1482742623218307173>`);
+        await interaction.editReply(`**تــم فــك الـتـايــم اوت عـن <@${target.id}>** <:Talk:1482742623218307173>`);
     } catch (error) {
-        return interaction.reply({ content: 'حدث خطأ أثناء فك التايم أوت.', flags: MessageFlags.Ephemeral });
+        return interaction.editReply({ content: 'حدث خطأ أثناء فك التايم أوت.' });
     }
 }

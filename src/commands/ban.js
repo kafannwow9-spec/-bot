@@ -11,22 +11,23 @@ export const data = new SlashCommandBuilder()
     .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers);
 
 export async function execute(interaction) {
+    await interaction.deferReply();
     const target = interaction.options.getUser('target');
     const member = await interaction.guild?.members.fetch(target.id);
 
     if (!member) {
-        return interaction.reply({ content: 'لم يتم العثور على هذا العضو.', flags: MessageFlags.Ephemeral });
+        return interaction.editReply({ content: 'لم يتم العثور على هذا العضو.' });
     }
 
     if (!member.bannable) {
-        return interaction.reply({ content: 'لا يمكنني حظر هذا العضو (ربما رتبته أعلى مني).', flags: MessageFlags.Ephemeral });
+        return interaction.editReply({ content: 'لا يمكنني حظر هذا العضو (ربما رتبته أعلى مني).' });
     }
 
     await member.ban();
-    addLog(interaction.guildId, 'ban', {
+    addLog(interaction.guild, 'ban', {
         adminId: interaction.user.id,
         targetId: target.id,
         reason: 'حظر من السيرفر'
     });
-    await interaction.reply(`**لــقـد تـم حــظـر #${target.username} مــن الــسـيرفـر <:ban:1482739850611523737> ! **`);
+    await interaction.editReply(`**لــقـد تـم حــظـر <@${target.id}> مــن الــسـيرفـر <:ban:1482739850611523737> ! **`);
 }

@@ -32,10 +32,10 @@ export async function execute(interaction) {
             await interaction.channel.send({ embeds: [embed] });
         }
 
-        addLog(interaction.guildId, 'send', {
+        addLog(interaction.guild, 'send', {
             adminId: interaction.user.id,
             adminTag: interaction.user.tag,
-            type,
+            sendType: type,
             content,
             channelId: interaction.channelId
         });

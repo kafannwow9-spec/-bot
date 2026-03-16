@@ -26,6 +26,12 @@ export function addPoints(userId, amount) {
     savePointsLog(log);
 }
 
+export function clearUserPoints(userId) {
+    let log = getPointsLog();
+    log = log.filter(entry => entry.userId !== userId);
+    savePointsLog(log);
+}
+
 export function getPoints(filter = 'total') {
     const log = getPointsLog();
     const now = Date.now();

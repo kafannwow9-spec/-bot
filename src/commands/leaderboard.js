@@ -15,6 +15,7 @@ export const data = new SlashCommandBuilder()
             ));
 
 export async function execute(interaction) {
+    await interaction.deferReply();
     const filter = interaction.options.getString('filter') || 'total';
     const points = getPoints(filter);
     
@@ -31,7 +32,7 @@ export async function execute(interaction) {
         .slice(0, 10);
 
     if (sortedPoints.length === 0) {
-        return interaction.reply({ content: 'لا يوجد نقاط مسجلة لهذه الفترة.', flags: MessageFlags.Ephemeral });
+        return interaction.editReply({ content: 'لا يوجد نقاط مسجلة لهذه الفترة.' });
     }
 
     const container = new ContainerBuilder();
@@ -49,8 +50,16 @@ export async function execute(interaction) {
         const [userId, userPoints] = sortedPoints[i];
         const rank = i + 1;
         
+        let username = 'عضو غير معروف';
+        try {
+            const user = await interaction.client.users.fetch(userId);
+            username = user.username;
+        } catch (e) {
+            // Ignore
+        }
+        
         container.addTextDisplayComponents((text) => 
-            text.setContent(`${rank}. <@${userId}> — \`${userPoints}\` <:Points:1482767197972463749>`)
+            text.setContent(`${rank}. **${username}** — \`${userPoints}\` <:Points:1482767197972463749>`)
         );
 
         // Add separator after each user except the last one
@@ -60,16 +69,15 @@ export async function execute(interaction) {
     }
 
     try {
-        await interaction.reply({
+        await interaction.editReply({
             components: [container],
             flags: MessageFlags.IsComponentsV2
         });
     } catch (error) {
         console.error('Error sending leaderboard:', error);
         // Fallback to normal embed if Components V2 fails (e.g. library version issue)
-        await interaction.reply({ 
-            content: 'حدث خطأ أثناء عرض لوحة المتصدرين. قد يكون إصدار المكتبة لا يدعم المكونات الجديدة.',
-            flags: MessageFlags.Ephemeral 
+        await interaction.editReply({ 
+            content: 'حدث خطأ أثناء عرض لوحة المتصدرين. قد يكون إصدار المكتبة لا يدعم المكونات الجديدة.'
         });
     }
 }

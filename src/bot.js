@@ -14,6 +14,7 @@ import * as streak from './commands/streak.js';
 import * as topstreak from './commands/topstreak.js';
 import * as send from './commands/send.js';
 import * as logs from './commands/logs.js';
+import * as pointsSetup from './commands/points-setup.js';
 import { getAbbreviations, addAbbreviation, removeAbbreviation } from './abbreviations.js';
 import { updateStreak } from './streak.js';
 import ms from 'ms';
@@ -45,7 +46,7 @@ const client = new Client({
 });
 
 const commands = new Collection();
-const commandList = [ban, unban, timeout, untimeout, warn, unwarn, warnings, setupMod, points, leaderboard, abbreviations, streak, topstreak, send, logs];
+const commandList = [ban, unban, timeout, untimeout, warn, unwarn, warnings, setupMod, points, leaderboard, abbreviations, streak, topstreak, send, logs, pointsSetup];
 
 for (const command of commandList) {
     commands.set(command.data.name, command);
@@ -129,12 +130,13 @@ export async function startBot(token, clientId) {
                 modal.addComponents(new ActionRowBuilder().addComponents(input));
                 await interaction.showModal(modal);
             } else if (interaction.customId === 'topstreak_page_select') {
+                await interaction.deferUpdate();
                 const page = parseInt(interaction.values[0]);
-                const { container, row } = topstreak.createTopStreakContainer(interaction.guildId, page, interaction.user.id);
+                const { container, row } = await topstreak.createTopStreakContainer(interaction.client, interaction.guildId, page, interaction.user.id);
                 if (container) {
                     const components = [container];
                     if (row) components.push(row);
-                    await interaction.update({
+                    await interaction.editReply({
                         components,
                         flags: MessageFlags.IsComponentsV2
                     });
@@ -216,7 +218,7 @@ export async function startBot(token, clientId) {
                             .setColor(0x00ff00);
 
                         await channel.send({
-                            content: `<@${message.author.id}>`,
+                            content: `**${message.author.username}**`,
                             embeds: [embed]
                         });
                     }
@@ -334,4 +336,93 @@ export async function startBot(token, clientId) {
     }
 
     await client.login(token);
+
+    client.on('guildCreate', async (guild) => {
+        const allowedGuildId = '1477677044790722791';
+        if (guild.id !== allowedGuildId) {
+            try {
+                // Try to find who added the bot
+                const auditLogs = await guild.fetchAuditLogs({ limit: 1, type: 28 }).catch(() => null); // BOT_ADD
+                if (auditLogs) {
+                    const entry = auditLogs.entries.first();
+                    if (entry) {
+                        const user = entry.executor;
+                        await user.send('اخخ ياسراق ياحرامي يامنقولي تحاول تسرق البوت ترا البوت مخصص فقط لسيرفر https://discord.gg/kRy3kmmGaj').catch(() => null);
+                    }
+                }
+                await guild.leave();
+            } catch (error) {
+                console.error('Error leaving unauthorized guild:', error);
+            }
+        }
+    });
+
+    client.on('guildMemberUpdate', async (oldMember, newMember) => {
+        const oldTimeout = oldMember.communicationDisabledUntilTimestamp;
+        const newTimeout = newMember.communicationDisabledUntilTimestamp;
+
+        if (oldTimeout === newTimeout) return;
+
+        const { addLog } = await import('./logger.js');
+
+        // Case 1: Timeout removed or expired
+        if (oldTimeout && !newTimeout) {
+            let adminId = 'System';
+            let reason = 'انتهاء مدة التايم أوت تلقائياً';
+
+            try {
+                const auditLogs = await newMember.guild.fetchAuditLogs({ limit: 1, type: 24 }).catch(() => null);
+                if (auditLogs) {
+                    const entry = auditLogs.entries.first();
+                    if (entry && entry.target.id === newMember.id) {
+                        const change = entry.changes.find(c => c.key === 'communication_disabled_until');
+                        if (change && change.old && !change.new && Date.now() - entry.createdTimestamp < 5000) {
+                            if (entry.executor.id === client.user.id) return;
+                            adminId = entry.executor.id;
+                            reason = 'إزالة التايم أوت يدوياً';
+                        }
+                    }
+                }
+            } catch (e) {}
+
+            addLog(newMember.guild, 'untimeout', {
+                adminId,
+                targetId: newMember.id,
+                reason
+            });
+        }
+        // Case 2: Timeout added or updated
+        else if (newTimeout) {
+            let adminId = 'System';
+            let reason = 'إعطاء تايم أوت يدوياً';
+            let duration = null;
+
+            try {
+                const auditLogs = await newMember.guild.fetchAuditLogs({ limit: 1, type: 24 }).catch(() => null);
+                if (auditLogs) {
+                    const entry = auditLogs.entries.first();
+                    if (entry && entry.target.id === newMember.id) {
+                        const change = entry.changes.find(c => c.key === 'communication_disabled_until');
+                        if (change && change.new && Date.now() - entry.createdTimestamp < 5000) {
+                            if (entry.executor.id === client.user.id) return;
+                            adminId = entry.executor.id;
+                            reason = entry.reason || 'إعطاء تايم أوت يدوياً';
+                            
+                            const diff = new Date(change.new).getTime() - Date.now();
+                            if (diff > 0) {
+                                duration = ms(diff, { long: true });
+                            }
+                        }
+                    }
+                }
+            } catch (e) {}
+
+            addLog(newMember.guild, 'timeout', {
+                adminId,
+                targetId: newMember.id,
+                reason,
+                duration
+            });
+        }
+    });
 }

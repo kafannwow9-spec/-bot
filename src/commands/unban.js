@@ -11,22 +11,23 @@ export const data = new SlashCommandBuilder()
     .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers);
 
 export async function execute(interaction) {
+    await interaction.deferReply();
     const userId = interaction.options.getString('user_id');
 
     try {
         const ban = await interaction.guild?.bans.fetch(userId);
         if (!ban) {
-            return interaction.reply({ content: 'هذا المستخدم ليس محظوراً أو الأيدي غير صحيح.', flags: MessageFlags.Ephemeral });
+            return interaction.editReply({ content: 'هذا المستخدم ليس محظوراً أو الأيدي غير صحيح.' });
         }
 
         await interaction.guild?.members.unban(userId);
-        addLog(interaction.guildId, 'unban', {
+        addLog(interaction.guild, 'unban', {
             adminId: interaction.user.id,
             targetId: userId,
             reason: 'فك الحظر'
         });
-        await interaction.reply(`**لــقــد تـم فــك الــحـظـر عـن #${ban.user.username} <:Allow:1482740836104929512>**`);
+        await interaction.editReply(`**لــقــد تـم فــك الــحـظـر عـن <@${userId}> <:Allow:1482740836104929512>**`);
     } catch (error) {
-        return interaction.reply({ content: 'حدث خطأ أثناء محاولة فك الحظر. تأكد من الأيدي.', flags: MessageFlags.Ephemeral });
+        return interaction.editReply({ content: 'حدث خطأ أثناء محاولة فك الحظر. تأكد من الأيدي.' });
     }
 }
