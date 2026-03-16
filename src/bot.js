@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Collection, REST, Routes, ActivityType, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, StringSelectMenuBuilder, PermissionFlagsBits, MessageFlags } from 'discord.js';
+import { Client, GatewayIntentBits, Collection, REST, Routes, ActivityType, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, StringSelectMenuBuilder, PermissionFlagsBits, MessageFlags, EmbedBuilder, ContainerBuilder } from 'discord.js';
 import * as ban from './commands/ban.js';
 import * as unban from './commands/unban.js';
 import * as timeout from './commands/timeout.js';
@@ -10,7 +10,9 @@ import * as setupMod from './commands/setup-mod.js';
 import * as points from './commands/points.js';
 import * as leaderboard from './commands/leaderboard.js';
 import * as abbreviations from './commands/abbreviations.js';
+import * as streak from './commands/streak.js';
 import { getAbbreviations, addAbbreviation, removeAbbreviation } from './abbreviations.js';
+import { updateStreak } from './streak.js';
 import ms from 'ms';
 
 async function updateAbbreviationsMessage(interaction) {
@@ -40,7 +42,7 @@ const client = new Client({
 });
 
 const commands = new Collection();
-const commandList = [ban, unban, timeout, untimeout, warn, unwarn, warnings, setupMod, points, leaderboard, abbreviations];
+const commandList = [ban, unban, timeout, untimeout, warn, unwarn, warnings, setupMod, points, leaderboard, abbreviations, streak];
 
 for (const command of commandList) {
     commands.set(command.data.name, command);
@@ -177,8 +179,39 @@ export async function startBot(token, clientId) {
     client.on('messageCreate', async message => {
         if (message.author.bot || !message.guild) return;
 
-        // Debug log to check if message content is received
-        // console.log(`Message received: "${message.content}"`);
+        // Streak Logic
+        const streakResult = updateStreak(message.guildId, message.author.id);
+        if (streakResult) {
+            const sendStreak = async () => {
+                try {
+                    let channel = message.guild.channels.cache.get(streakResult.channelId);
+                    if (!channel) {
+                        channel = await message.guild.channels.fetch(streakResult.channelId).catch(() => null);
+                    }
+                    
+                    if (channel) {
+                        const fullShield = '<:shield:1483070889124827250>';
+                        const usedShield = '<:Shield:1483070891196809316>';
+                        
+                        const shieldsDisplay = usedShield.repeat(3 - streakResult.shields) + fullShield.repeat(streakResult.shields);
+                        const usedCount = 3 - streakResult.shields;
+
+                        const embed = new EmbedBuilder()
+                            .setTitle('**__تــحــديـث الـســتـريـك<:Streak:1483068555514744902> __**')
+                            .setDescription(`- **<:Streak:1483068555514744902>  — ${streakResult.count}**\n- **( ${shieldsDisplay} ) — ${usedCount}**`)
+                            .setColor(0x00ff00);
+
+                        await channel.send({
+                            content: `<@${message.author.id}>`,
+                            embeds: [embed]
+                        });
+                    }
+                } catch (err) {
+                    console.error('Error sending streak message:', err);
+                }
+            };
+            sendStreak();
+        }
 
         const args = message.content.split(/\s+/);
         const firstArg = args.shift();
