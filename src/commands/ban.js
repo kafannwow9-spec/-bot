@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
+import { SlashCommandBuilder, PermissionFlagsBits, MessageFlags } from 'discord.js';
 
 export const data = new SlashCommandBuilder()
     .setName('ban')
@@ -14,11 +14,11 @@ export async function execute(interaction) {
     const member = await interaction.guild?.members.fetch(target.id);
 
     if (!member) {
-        return interaction.reply({ content: 'لم يتم العثور على هذا العضو.', ephemeral: true });
+        return interaction.reply({ content: 'لم يتم العثور على هذا العضو.', flags: MessageFlags.Ephemeral });
     }
 
     if (!member.bannable) {
-        return interaction.reply({ content: 'لا يمكنني حظر هذا العضو (ربما رتبته أعلى مني).', ephemeral: true });
+        return interaction.reply({ content: 'لا يمكنني حظر هذا العضو (ربما رتبته أعلى مني).', flags: MessageFlags.Ephemeral });
     }
 
     await member.ban();

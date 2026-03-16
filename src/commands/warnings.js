@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, MessageFlags } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
 import { hasModPermission } from '../config.js';
@@ -24,7 +24,7 @@ export const data = new SlashCommandBuilder()
 
 export async function execute(interaction) {
     if (!hasModPermission(interaction.member, interaction.guildId)) {
-        return interaction.reply({ content: 'ليس لديك صلاحية استخدام هذا الأمر.', ephemeral: true });
+        return interaction.reply({ content: 'ليس لديك صلاحية استخدام هذا الأمر.', flags: MessageFlags.Ephemeral });
     }
     const target = interaction.options.getUser('target');
     const warnings = getWarnings();

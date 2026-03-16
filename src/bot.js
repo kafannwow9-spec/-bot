@@ -14,15 +14,19 @@ import { getAbbreviations, addAbbreviation, removeAbbreviation } from './abbrevi
 import ms from 'ms';
 
 async function updateAbbreviationsMessage(interaction) {
-    const abbrevs = getAbbreviations();
-    const container = abbreviations.createAbbreviationsContainer(abbrevs);
-    
-    // The original message is interaction.message
-    if (interaction.message) {
-        await interaction.message.edit({
-            components: [container, interaction.message.components[1]],
-            flags: MessageFlags.IsComponentsV2
-        });
+    try {
+        const abbrevs = getAbbreviations();
+        const container = abbreviations.createAbbreviationsContainer(abbrevs);
+        
+        // The original message is interaction.message
+        if (interaction.message) {
+            await interaction.message.edit({
+                components: [container, interaction.message.components[1]],
+                flags: MessageFlags.IsComponentsV2
+            });
+        }
+    } catch (error) {
+        console.error('Error updating abbreviations message:', error);
     }
 }
 
@@ -31,6 +35,7 @@ const client = new Client({
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
     ],
 });
 
@@ -47,6 +52,18 @@ export async function startBot(token, clientId) {
         client.user.setActivity('made by b9r2', { type: ActivityType.Playing });
     });
 
+    client.on('error', error => {
+        console.error('Discord client error:', error);
+    });
+
+    process.on('unhandledRejection', error => {
+        console.error('Unhandled promise rejection:', error);
+    });
+
+    process.on('uncaughtException', error => {
+        console.error('Uncaught exception:', error);
+    });
+
     client.on('interactionCreate', async interaction => {
         if (interaction.isChatInputCommand()) {
             const command = commands.get(interaction.commandName);
@@ -57,15 +74,15 @@ export async function startBot(token, clientId) {
             } catch (error) {
                 console.error(error);
                 if (interaction.replied || interaction.deferred) {
-                    await interaction.followUp({ content: 'حدث خطأ أثناء تنفيذ الأمر!', ephemeral: true });
+                    await interaction.followUp({ content: 'حدث خطأ أثناء تنفيذ الأمر!', flags: MessageFlags.Ephemeral });
                 } else {
-                    await interaction.reply({ content: 'حدث خطأ أثناء تنفيذ الأمر!', ephemeral: true });
+                    await interaction.reply({ content: 'حدث خطأ أثناء تنفيذ الأمر!', flags: MessageFlags.Ephemeral });
                 }
             }
         } else if (interaction.isStringSelectMenu()) {
             if (interaction.customId === 'add_abbrev_select') {
                 if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
-                    return interaction.reply({ content: 'فقط المسؤولين يمكنهم استخدام هذا.', ephemeral: true });
+                    return interaction.reply({ content: 'فقط المسؤولين يمكنهم استخدام هذا.', flags: MessageFlags.Ephemeral });
                 }
                 const cmdName = interaction.values[0];
                 const modal = new ModalBuilder()
@@ -82,15 +99,15 @@ export async function startBot(token, clientId) {
                 await interaction.showModal(modal);
             } else if (interaction.customId === 'delete_abbrev_select') {
                 if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
-                    return interaction.reply({ content: 'فقط المسؤولين يمكنهم استخدام هذا.', ephemeral: true });
+                    return interaction.reply({ content: 'فقط المسؤولين يمكنهم استخدام هذا.', flags: MessageFlags.Ephemeral });
                 }
                 const alias = interaction.values[0];
                 removeAbbreviation(alias);
-                await interaction.reply({ content: `تم إزالة المشغل \`${alias}\` بنجاح.`, ephemeral: true });
+                await interaction.reply({ content: `تم إزالة المشغل \`${alias}\` بنجاح.`, flags: MessageFlags.Ephemeral });
                 await updateAbbreviationsMessage(interaction);
             } else if (interaction.customId === 'edit_abbrev_select') {
                 if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
-                    return interaction.reply({ content: 'فقط المسؤولين يمكنهم استخدام هذا.', ephemeral: true });
+                    return interaction.reply({ content: 'فقط المسؤولين يمكنهم استخدام هذا.', flags: MessageFlags.Ephemeral });
                 }
                 const alias = interaction.values[0];
                 const modal = new ModalBuilder()
@@ -110,39 +127,39 @@ export async function startBot(token, clientId) {
         } else if (interaction.isButton()) {
             if (interaction.customId === 'delete_abbrev_btn') {
                 if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
-                    return interaction.reply({ content: 'فقط المسؤولين يمكنهم استخدام هذا.', ephemeral: true });
+                    return interaction.reply({ content: 'فقط المسؤولين يمكنهم استخدام هذا.', flags: MessageFlags.Ephemeral });
                 }
                 const abbrevs = getAbbreviations();
                 const options = Object.keys(abbrevs).map(alias => ({ label: alias, value: alias }));
-                if (options.length === 0) return interaction.reply({ content: 'لا يوجد مشغلات مضافة بعد.', ephemeral: true });
+                if (options.length === 0) return interaction.reply({ content: 'لا يوجد مشغلات مضافة بعد.', flags: MessageFlags.Ephemeral });
 
                 const menu = new StringSelectMenuBuilder()
                     .setCustomId('delete_abbrev_select')
                     .setPlaceholder('اختر مشغل لحذفه')
                     .addOptions(options);
 
-                await interaction.reply({ components: [new ActionRowBuilder().addComponents(menu)], ephemeral: true });
+                await interaction.reply({ components: [new ActionRowBuilder().addComponents(menu)], flags: MessageFlags.Ephemeral });
             } else if (interaction.customId === 'edit_abbrev_btn') {
                 if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
-                    return interaction.reply({ content: 'فقط المسؤولين يمكنهم استخدام هذا.', ephemeral: true });
+                    return interaction.reply({ content: 'فقط المسؤولين يمكنهم استخدام هذا.', flags: MessageFlags.Ephemeral });
                 }
                 const abbrevs = getAbbreviations();
                 const options = Object.keys(abbrevs).map(alias => ({ label: alias, value: alias }));
-                if (options.length === 0) return interaction.reply({ content: 'لا يوجد مشغلات مضافة بعد.', ephemeral: true });
+                if (options.length === 0) return interaction.reply({ content: 'لا يوجد مشغلات مضافة بعد.', flags: MessageFlags.Ephemeral });
 
                 const menu = new StringSelectMenuBuilder()
                     .setCustomId('edit_abbrev_select')
                     .setPlaceholder('اختر مشغل لتعديله')
                     .addOptions(options);
 
-                await interaction.reply({ components: [new ActionRowBuilder().addComponents(menu)], ephemeral: true });
+                await interaction.reply({ components: [new ActionRowBuilder().addComponents(menu)], flags: MessageFlags.Ephemeral });
             }
         } else if (interaction.isModalSubmit()) {
             if (interaction.customId.startsWith('modal_add_abbrev_')) {
                 const cmdName = interaction.customId.replace('modal_add_abbrev_', '');
                 const alias = interaction.fields.getTextInputValue('abbrev_input');
                 addAbbreviation(alias, cmdName);
-                await interaction.reply({ content: `تم إضافة المشغل \`${alias}\` للأمر \`${cmdName}\` بنجاح.`, ephemeral: true });
+                await interaction.reply({ content: `تم إضافة المشغل \`${alias}\` للأمر \`${cmdName}\` بنجاح.`, flags: MessageFlags.Ephemeral });
                 await updateAbbreviationsMessage(interaction);
             } else if (interaction.customId.startsWith('modal_edit_abbrev_')) {
                 const oldAlias = interaction.customId.replace('modal_edit_abbrev_', '');
@@ -151,7 +168,7 @@ export async function startBot(token, clientId) {
                 const cmdName = abbrevs[oldAlias];
                 removeAbbreviation(oldAlias);
                 addAbbreviation(newAlias, cmdName);
-                await interaction.reply({ content: `تم تعديل المشغل من \`${oldAlias}\` إلى \`${newAlias}\` بنجاح.`, ephemeral: true });
+                await interaction.reply({ content: `تم تعديل المشغل من \`${oldAlias}\` إلى \`${newAlias}\` بنجاح.`, flags: MessageFlags.Ephemeral });
                 await updateAbbreviationsMessage(interaction);
             }
         }
@@ -160,6 +177,9 @@ export async function startBot(token, clientId) {
     client.on('messageCreate', async message => {
         if (message.author.bot || !message.guild) return;
 
+        // Debug log to check if message content is received
+        // console.log(`Message received: "${message.content}"`);
+
         const args = message.content.split(/\s+/);
         const firstArg = args.shift();
         if (!firstArg) return;
@@ -167,6 +187,8 @@ export async function startBot(token, clientId) {
         const abbrevs = getAbbreviations();
         const cmdName = abbrevs[firstArg.toLowerCase()];
         if (!cmdName) return;
+
+        console.log(`Executing text command: ${cmdName} for alias: ${firstArg}`);
 
         const command = commands.get(cmdName);
         if (!command) return;
@@ -198,14 +220,24 @@ export async function startBot(token, clientId) {
                 getString: (name) => {
                     if (name === 'duration') {
                         // Find first arg that looks like a duration (not a mention/ID)
-                        return args.find(a => !a.startsWith('<@') && !/^\d+$/.test(a)) || args[0];
+                        // A duration usually ends with s, m, h, d, w
+                        return args.find(a => /^\d+[smhdw]$/.test(a)) || args.find(a => !a.startsWith('<@') && !/^\d+$/.test(a)) || args[0];
                     }
                     if (name === 'reason') {
-                        // Everything after the user/duration
-                        const userIndex = args.findIndex(a => a.startsWith('<@') || /^\d+$/.test(a));
-                        const durationIndex = args.findIndex(a => !a.startsWith('<@') && !/^\d+$/.test(a));
-                        const startIndex = Math.max(userIndex, durationIndex) + 1;
-                        return args.slice(startIndex).join(' ') || args.slice(1).join(' ');
+                        // Everything after the user and duration
+                        const userArg = args.find(a => a.startsWith('<@') || /^\d+$/.test(a));
+                        const durationArg = args.find(a => /^\d+[smhdw]$/.test(a));
+                        
+                        let reasonArgs = [...args];
+                        if (userArg) {
+                            const idx = reasonArgs.indexOf(userArg);
+                            if (idx !== -1) reasonArgs.splice(idx, 1);
+                        }
+                        if (durationArg) {
+                            const idx = reasonArgs.indexOf(durationArg);
+                            if (idx !== -1) reasonArgs.splice(idx, 1);
+                        }
+                        return reasonArgs.join(' ') || null;
                     }
                     if (name === 'filter') return args[0];
                     return args[0];

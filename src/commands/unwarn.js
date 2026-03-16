@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, StringSelectMenuBuilder, ComponentType } from 'discord.js';
+import { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, StringSelectMenuBuilder, ComponentType, MessageFlags } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
 import { hasModPermission } from '../config.js';
@@ -28,13 +28,13 @@ export const data = new SlashCommandBuilder()
 
 export async function execute(interaction) {
     if (!hasModPermission(interaction.member, interaction.guildId)) {
-        return interaction.reply({ content: 'ليس لديك صلاحية استخدام هذا الأمر.', ephemeral: true });
+        return interaction.reply({ content: 'ليس لديك صلاحية استخدام هذا الأمر.', flags: MessageFlags.Ephemeral });
     }
     const target = interaction.options.getUser('target');
     const warnings = getWarnings();
 
     if (!warnings[target.id] || warnings[target.id].length === 0) {
-        return interaction.reply({ content: 'هذا العضو ليس لديه أي تحذيرات.', ephemeral: true });
+        return interaction.reply({ content: 'هذا العضو ليس لديه أي تحذيرات.', flags: MessageFlags.Ephemeral });
     }
 
     const options = warnings[target.id].map((w, index) => ({
@@ -53,7 +53,7 @@ export async function execute(interaction) {
     const response = await interaction.reply({
         content: `تحذيرات <@${target.id}>:`,
         components: [row],
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
     });
 
     const collector = response.createMessageComponentCollector({
@@ -63,12 +63,16 @@ export async function execute(interaction) {
 
     collector.on('collect', async i => {
         if (i.customId === 'remove_warning') {
-            const warningId = i.values[0];
-            const currentWarnings = getWarnings();
-            currentWarnings[target.id] = currentWarnings[target.id].filter((w) => w.id !== warningId);
-            saveWarnings(currentWarnings);
+            try {
+                const warningId = i.values[0];
+                const currentWarnings = getWarnings();
+                currentWarnings[target.id] = currentWarnings[target.id].filter((w) => w.id !== warningId);
+                saveWarnings(currentWarnings);
 
-            await i.update({ content: `**تــم إزالـة الـتــحـذيـر عــن <@${target.id}> <:un:1482744683741319330>**`, components: [] });
+                await i.update({ content: `**تــم إزالـة الـتــحـذيـر عــن <@${target.id}> <:un:1482744683741319330>**`, components: [] });
+            } catch (error) {
+                console.error('Error updating unwarn interaction:', error);
+            }
         }
     });
 }

@@ -31,7 +31,7 @@ export async function execute(interaction) {
         .slice(0, 10);
 
     if (sortedPoints.length === 0) {
-        return interaction.reply({ content: 'لا يوجد نقاط مسجلة لهذه الفترة.', ephemeral: true });
+        return interaction.reply({ content: 'لا يوجد نقاط مسجلة لهذه الفترة.', flags: MessageFlags.Ephemeral });
     }
 
     const container = new ContainerBuilder();
@@ -69,7 +69,7 @@ export async function execute(interaction) {
         // Fallback to normal embed if Components V2 fails (e.g. library version issue)
         await interaction.reply({ 
             content: 'حدث خطأ أثناء عرض لوحة المتصدرين. قد يكون إصدار المكتبة لا يدعم المكونات الجديدة.',
-            ephemeral: true 
+            flags: MessageFlags.Ephemeral 
         });
     }
 }
