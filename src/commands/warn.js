@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { hasModPermission } from '../config.js';
 import { addPoints } from '../points.js';
+import { addLog } from '../logger.js';
 
 const warningsPath = path.resolve('warnings.json');
 
@@ -51,6 +52,11 @@ export async function execute(interaction) {
     warnings[target.id].push(warning);
     saveWarnings(warnings);
     addPoints(interaction.user.id, 1);
+    addLog(interaction.guildId, 'warn', {
+        adminId: interaction.user.id,
+        targetId: target.id,
+        reason: reason
+    });
 
     await interaction.reply(`**لــقـد تــم تــحـذيـر <@${target.id}> <:warn:1482744209000894657>**`);
 }

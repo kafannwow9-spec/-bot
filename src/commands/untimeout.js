@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, PermissionFlagsBits, MessageFlags } from 'discord.js';
 import { hasModPermission } from '../config.js';
+import { addLog } from '../logger.js';
 
 export const data = new SlashCommandBuilder()
     .setName('untimeout')
@@ -20,6 +21,11 @@ export async function execute(interaction) {
 
     try {
         await member.timeout(null);
+        addLog(interaction.guildId, 'untimeout', {
+            adminId: interaction.user.id,
+            targetId: target.id,
+            reason: 'فك التايم أوت'
+        });
         await interaction.reply(`**تــم فــك الـتـايــم اوت عـن **__#${target.username}__ <:Talk:1482742623218307173>`);
     } catch (error) {
         return interaction.reply({ content: 'حدث خطأ أثناء فك التايم أوت.', flags: MessageFlags.Ephemeral });

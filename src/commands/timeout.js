@@ -2,6 +2,7 @@ import { SlashCommandBuilder, PermissionFlagsBits, MessageFlags } from 'discord.
 import ms from 'ms';
 import { hasModPermission } from '../config.js';
 import { addPoints } from '../points.js';
+import { addLog } from '../logger.js';
 
 export const data = new SlashCommandBuilder()
     .setName('timeout')
@@ -38,6 +39,12 @@ export async function execute(interaction) {
     try {
         await member.timeout(duration, reason);
         addPoints(interaction.user.id, 1);
+        addLog(interaction.guildId, 'timeout', {
+            adminId: interaction.user.id,
+            targetId: target.id,
+            duration: durationStr,
+            reason: reason
+        });
         await interaction.reply(`**تــم إعـطــاء وقــت مــسـتــقـطــع لـ**<@${target.id}> <:Timeout:1482741555516407990>`);
     } catch (error) {
         return interaction.reply({ content: 'لا يمكنني إعطاء وقت مستقطع لهذا العضو.', flags: MessageFlags.Ephemeral });

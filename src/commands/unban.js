@@ -1,4 +1,5 @@
 import { SlashCommandBuilder, PermissionFlagsBits, MessageFlags } from 'discord.js';
+import { addLog } from '../logger.js';
 
 export const data = new SlashCommandBuilder()
     .setName('unban')
@@ -19,6 +20,11 @@ export async function execute(interaction) {
         }
 
         await interaction.guild?.members.unban(userId);
+        addLog(interaction.guildId, 'unban', {
+            adminId: interaction.user.id,
+            targetId: userId,
+            reason: 'فك الحظر'
+        });
         await interaction.reply(`**لــقــد تـم فــك الــحـظـر عـن #${ban.user.username} <:Allow:1482740836104929512>**`);
     } catch (error) {
         return interaction.reply({ content: 'حدث خطأ أثناء محاولة فك الحظر. تأكد من الأيدي.', flags: MessageFlags.Ephemeral });

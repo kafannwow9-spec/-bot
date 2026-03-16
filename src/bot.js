@@ -12,6 +12,8 @@ import * as leaderboard from './commands/leaderboard.js';
 import * as abbreviations from './commands/abbreviations.js';
 import * as streak from './commands/streak.js';
 import * as topstreak from './commands/topstreak.js';
+import * as send from './commands/send.js';
+import * as logs from './commands/logs.js';
 import { getAbbreviations, addAbbreviation, removeAbbreviation } from './abbreviations.js';
 import { updateStreak } from './streak.js';
 import ms from 'ms';
@@ -43,7 +45,7 @@ const client = new Client({
 });
 
 const commands = new Collection();
-const commandList = [ban, unban, timeout, untimeout, warn, unwarn, warnings, setupMod, points, leaderboard, abbreviations, streak, topstreak];
+const commandList = [ban, unban, timeout, untimeout, warn, unwarn, warnings, setupMod, points, leaderboard, abbreviations, streak, topstreak, send, logs];
 
 for (const command of commandList) {
     commands.set(command.data.name, command);

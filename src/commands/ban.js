@@ -1,4 +1,5 @@
 import { SlashCommandBuilder, PermissionFlagsBits, MessageFlags } from 'discord.js';
+import { addLog } from '../logger.js';
 
 export const data = new SlashCommandBuilder()
     .setName('ban')
@@ -22,5 +23,10 @@ export async function execute(interaction) {
     }
 
     await member.ban();
+    addLog(interaction.guildId, 'ban', {
+        adminId: interaction.user.id,
+        targetId: target.id,
+        reason: 'حظر من السيرفر'
+    });
     await interaction.reply(`**لــقـد تـم حــظـر #${target.username} مــن الــسـيرفـر <:ban:1482739850611523737> ! **`);
 }

@@ -2,6 +2,7 @@ import { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, StringSelec
 import fs from 'fs';
 import path from 'path';
 import { hasModPermission } from '../config.js';
+import { addLog } from '../logger.js';
 
 const warningsPath = path.resolve('warnings.json');
 
@@ -68,6 +69,12 @@ export async function execute(interaction) {
                 const currentWarnings = getWarnings();
                 currentWarnings[target.id] = currentWarnings[target.id].filter((w) => w.id !== warningId);
                 saveWarnings(currentWarnings);
+
+                addLog(i.guildId, 'unwarn', {
+                    adminId: i.user.id,
+                    targetId: target.id,
+                    reason: 'إزالة تحذير'
+                });
 
                 await i.update({ content: `**تــم إزالـة الـتــحـذيـر عــن <@${target.id}> <:un:1482744683741319330>**`, components: [] });
             } catch (error) {
