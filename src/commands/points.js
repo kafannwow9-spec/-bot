@@ -19,7 +19,7 @@ export async function execute(interaction) {
         .setDescription(`**عــدد نــقـاطـك هـو \`${userPoints}\` <:Points:1482767197972463749>**`);
 
     if (target.id !== interaction.user.id) {
-        embed.setDescription(`**عــدد نــقـاط \`${target.username}\` هـو \`${userPoints}\` <:Points:1482767197972463749>**`);
+        embed.setDescription(`**عــدد نــقـاط <@${target.id}> هـو \`${userPoints}\` <:Points:1482767197972463749>**`);
     }
 
     await interaction.reply({ embeds: [embed] });

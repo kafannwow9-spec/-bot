@@ -218,7 +218,7 @@ export async function startBot(token, clientId) {
                             .setColor(0x00ff00);
 
                         await channel.send({
-                            content: `**${message.author.username}**`,
+                            content: `<@${message.author.id}>`,
                             embeds: [embed]
                         });
                     }

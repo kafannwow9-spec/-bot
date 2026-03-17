@@ -53,7 +53,7 @@ export async function execute(interaction) {
     const row = new ActionRowBuilder().addComponents(selectMenu);
 
     const response = await interaction.editReply({
-        content: `تحذيرات \`${target.username}\`:`,
+        content: `تحذيرات <@${target.id}>:`,
         components: [row]
     });
 

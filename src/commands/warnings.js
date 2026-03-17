@@ -42,7 +42,7 @@ export async function execute(interaction) {
         userWarnings.forEach((w, index) => {
             embed.addFields({
                 name: `تحذير #${index + 1}`,
-                value: `بواسطة: ${w.moderator}\nالتاريخ: ${w.timestamp}\nالسبب: ${w.reason}`
+                value: `بواسطة: <@${w.moderatorId || w.moderator}>\nالتاريخ: ${w.timestamp}\nالسبب: ${w.reason}`
             });
         });
     }

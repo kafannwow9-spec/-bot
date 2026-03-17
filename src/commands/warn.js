@@ -46,7 +46,7 @@ export async function execute(interaction) {
     const warning = {
         id: Date.now().toString(),
         reason,
-        moderator: interaction.user.tag,
+        moderatorId: interaction.user.id,
         timestamp: new Date().toLocaleString('ar-EG')
     };
 
