@@ -86,7 +86,7 @@ export async function execute(interaction) {
         );
 
         for (const log of lastLogs) {
-            container.addSeparatorComponents((s) => s);
+            container.addTextDisplayComponents((text) => text.setContent('————————————————'));
             
             let logText = '';
             const time = new Date(log.timestamp).toLocaleString('ar-EG', { timeZone: 'UTC' });

@@ -132,13 +132,13 @@ export async function startBot(token, clientId) {
             } else if (interaction.customId === 'topstreak_page_select') {
                 await interaction.deferUpdate();
                 const page = parseInt(interaction.values[0]);
-                const { container, row } = await topstreak.createTopStreakContainer(interaction.client, interaction.guildId, page, interaction.user.id);
-                if (container) {
-                    const components = [container];
+                const { embed, row } = await topstreak.createTopStreakEmbed(interaction.client, interaction.guildId, page, interaction.user.id);
+                if (embed) {
+                    const components = [];
                     if (row) components.push(row);
                     await interaction.editReply({
-                        components,
-                        flags: MessageFlags.IsComponentsV2
+                        embeds: [embed],
+                        components
                     });
                 }
             }

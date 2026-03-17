@@ -27,7 +27,7 @@ export function createAbbreviationsContainer(abbrevs) {
         text.setContent('**مــشـغـل الأوامــر <:Operator:1482800316821803262>**')
     );
 
-    container.addSeparatorComponents((s) => s);
+    container.addTextDisplayComponents((text) => text.setContent('————————————————'));
 
     commandNames.forEach((cmd, index) => {
         const cmdAbbrevs = Object.entries(abbrevs)
@@ -40,7 +40,7 @@ export function createAbbreviationsContainer(abbrevs) {
         );
 
         if (index < commandNames.length - 1) {
-            container.addSeparatorComponents((s) => s);
+            container.addTextDisplayComponents((text) => text.setContent('————————————————'));
         }
     });
 
