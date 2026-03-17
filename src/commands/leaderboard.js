@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ContainerBuilder, MessageFlags } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 import { getPoints } from '../points.js';
 
 export const data = new SlashCommandBuilder()

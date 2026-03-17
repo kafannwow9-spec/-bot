@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ContainerBuilder, MessageFlags, ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js';
 import { getStreakData } from '../streak.js';
 
 export const data = new SlashCommandBuilder()
