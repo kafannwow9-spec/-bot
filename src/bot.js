@@ -15,6 +15,7 @@ import * as topstreak from './commands/topstreak.js';
 import * as send from './commands/send.js';
 import * as logs from './commands/logs.js';
 import * as pointsSetup from './commands/points-setup.js';
+import * as broadcast from './commands/broadcast.js';
 import { getAbbreviations, addAbbreviation, removeAbbreviation } from './abbreviations.js';
 import { updateStreak } from './streak.js';
 import ms from 'ms';
@@ -43,11 +44,12 @@ const client = new Client({
         GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildPresences,
     ],
 });
 
 const commands = new Collection();
-const commandList = [ban, unban, timeout, untimeout, warn, unwarn, warnings, setupMod, points, leaderboard, abbreviations, streak, topstreak, send, logs, pointsSetup];
+const commandList = [ban, unban, timeout, untimeout, warn, unwarn, warnings, setupMod, points, leaderboard, abbreviations, streak, topstreak, send, logs, pointsSetup, broadcast];
 
 for (const command of commandList) {
     commands.set(command.data.name, command);
