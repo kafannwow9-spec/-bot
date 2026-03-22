@@ -1,7 +1,7 @@
 import { 
     SlashCommandBuilder, 
     PermissionFlagsBits, 
-    ContainerBuilder, 
+    EmbedBuilder, 
     StringSelectMenuBuilder, 
     ActionRowBuilder, 
     ButtonBuilder, 
@@ -18,44 +18,41 @@ export const data = new SlashCommandBuilder()
     .setDescription('إدارة مشغلات الأوامر الكتابية')
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
 
-export function createAbbreviationsContainer(abbrevs) {
+export function createAbbreviationsEmbed(abbrevs) {
     const commandNames = ['ban', 'unban', 'timeout', 'untimeout', 'warn', 'unwarn', 'warnings', 'points', 'leaderboard'];
-    const container = new ContainerBuilder()
-        .setAccentColor(0x0099ff);
+    const embed = new EmbedBuilder()
+        .setTitle('**مــشـغـل الأوامــر <:Operator:1482800316821803262>**')
+        .setColor(0x0099ff);
 
-    container.addTextDisplayComponents((text) => 
-        text.setContent('**مــشـغـل الأوامــر <:Operator:1482800316821803262>**')
-    );
-
-    container.addTextDisplayComponents((text) => text.setContent('————————————————'));
-
+    let description = '';
     commandNames.forEach((cmd, index) => {
         const cmdAbbrevs = Object.entries(abbrevs)
             .filter(([, target]) => target === cmd)
-            .map(([alias]) => `- ** ${alias} **`)
-            .join('\n') || 'لا يوجد أوامر بعد';
+            .map(([alias]) => `\`${alias}\``)
+            .join(', ') || 'لا يوجد أوامر بعد';
 
-        container.addTextDisplayComponents((text) => 
-            text.setContent(`** ${cmd} **\n${cmdAbbrevs}`)
-        );
+        description += `** ${cmd} **\n${cmdAbbrevs}\n`;
 
         if (index < commandNames.length - 1) {
-            container.addTextDisplayComponents((text) => text.setContent('————————————————'));
+            description += '————————————————\n';
         }
     });
 
+    embed.setDescription(description);
+    return embed;
+}
+
+export async function execute(interaction) {
+    const abbrevs = getAbbreviations();
+    const embed = createAbbreviationsEmbed(abbrevs);
+
+    const commandNames = ['ban', 'unban', 'timeout', 'untimeout', 'warn', 'unwarn', 'warnings', 'points', 'leaderboard'];
     const selectMenu = new StringSelectMenuBuilder()
         .setCustomId('add_abbrev_select')
         .setPlaceholder('اختر أمر لإضافة مشغل له')
         .addOptions(commandNames.map(cmd => ({ label: cmd, value: cmd })));
 
-    container.addActionRowComponents((row) => row.setComponents(selectMenu));
-    return container;
-}
-
-export async function execute(interaction) {
-    const abbrevs = getAbbreviations();
-    const container = createAbbreviationsContainer(abbrevs);
+    const selectRow = new ActionRowBuilder().addComponents(selectMenu);
 
     const editBtn = new ButtonBuilder()
         .setCustomId('edit_abbrev_btn')
@@ -69,10 +66,11 @@ export async function execute(interaction) {
         .setEmoji('1482801908832931942')
         .setStyle(ButtonStyle.Danger);
 
-    const row = new ActionRowBuilder().addComponents(editBtn, deleteBtn);
+    const btnRow = new ActionRowBuilder().addComponents(editBtn, deleteBtn);
 
     await interaction.reply({
-        components: [container, row],
-        flags: MessageFlags.IsComponentsV2
+        embeds: [embed],
+        components: [selectRow, btnRow],
+        flags: MessageFlags.Ephemeral
     });
 }

@@ -22,7 +22,7 @@ export const data = new SlashCommandBuilder()
 
 export async function execute(interaction) {
     if (!hasModPermission(interaction.member, interaction.guildId)) {
-        return interaction.reply({ content: 'ليس لديك صلاحية استخدام هذا الأمر.', flags: MessageFlags.Ephemeral });
+        return await interaction.reply({ content: 'ليس لديك صلاحية استخدام هذا الأمر.', flags: MessageFlags.Ephemeral });
     }
     await interaction.deferReply();
     const target = interaction.options.getUser('target');

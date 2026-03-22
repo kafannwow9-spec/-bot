@@ -1,30 +1,44 @@
-import fs from 'fs';
+import { safeReadJSON, safeWriteJSON } from './utils.js';
 import path from 'path';
 
 const configPath = path.resolve('config.json');
 
+/**
+ * Retrieves the current configuration.
+ * @returns {object} - The configuration object.
+ */
 export function getConfig() {
-    if (!fs.existsSync(configPath)) return {};
-    try {
-        return JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-    } catch (e) {
-        return {};
-    }
+    return safeReadJSON(configPath, {});
 }
 
+/**
+ * Saves the configuration.
+ * @param {object} config - The configuration object to save.
+ * @returns {boolean} - True if successful, false otherwise.
+ */
 export function saveConfig(config) {
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    return safeWriteJSON(configPath, config);
 }
 
+/**
+ * Checks if a member has moderation permissions.
+ * @param {object} member - The guild member object.
+ * @param {string} guildId - The ID of the guild.
+ * @returns {boolean} - True if the member has permissions, false otherwise.
+ */
 export function hasModPermission(member, guildId) {
+    if (!member) return false;
+    
+    // Check for Administrator permission first
+    if (member.permissions.has('Administrator')) return true;
+
     const config = getConfig();
     const modRoleId = config[guildId]?.modRoleId;
-    
-    // Check if member has the specific role
+
     if (modRoleId && member.roles.cache.has(modRoleId)) {
         return true;
     }
     
-    // Fallback to Administrator or ModerateMembers permission
-    return member.permissions.has('Administrator') || member.permissions.has('ModerateMembers');
+    // Fallback to ModerateMembers permission
+    return member.permissions.has('ModerateMembers');
 }

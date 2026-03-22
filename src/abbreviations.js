@@ -1,19 +1,23 @@
-import fs from 'fs';
+import { safeReadJSON, safeWriteJSON } from './utils.js';
 import path from 'path';
 
 const abbrevPath = path.resolve('abbreviations.json');
 
+/**
+ * Retrieves the current abbreviations data.
+ * @returns {object} - The abbreviations data object.
+ */
 export function getAbbreviations() {
-    if (!fs.existsSync(abbrevPath)) return {};
-    try {
-        return JSON.parse(fs.readFileSync(abbrevPath, 'utf-8'));
-    } catch (e) {
-        return {};
-    }
+    return safeReadJSON(abbrevPath, {});
 }
 
+/**
+ * Saves the abbreviations data.
+ * @param {object} data - The abbreviations data object to save.
+ * @returns {boolean} - True if successful, false otherwise.
+ */
 export function saveAbbreviations(data) {
-    fs.writeFileSync(abbrevPath, JSON.stringify(data, null, 2));
+    return safeWriteJSON(abbrevPath, data);
 }
 
 export function addAbbreviation(alias, commandName) {

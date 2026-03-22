@@ -1,19 +1,23 @@
-import fs from 'fs';
+import { safeReadJSON, safeWriteJSON } from './utils.js';
 import path from 'path';
 
 const pointsLogPath = path.resolve('points_log.json');
 
+/**
+ * Retrieves the current points data.
+ * @returns {Array} - The points log array.
+ */
 export function getPointsLog() {
-    if (!fs.existsSync(pointsLogPath)) return [];
-    try {
-        return JSON.parse(fs.readFileSync(pointsLogPath, 'utf-8'));
-    } catch (e) {
-        return [];
-    }
+    return safeReadJSON(pointsLogPath, []);
 }
 
+/**
+ * Saves the points data.
+ * @param {Array} log - The points log array to save.
+ * @returns {boolean} - True if successful, false otherwise.
+ */
 export function savePointsLog(log) {
-    fs.writeFileSync(pointsLogPath, JSON.stringify(log, null, 2));
+    return safeWriteJSON(pointsLogPath, log);
 }
 
 export function addPoints(userId, amount) {

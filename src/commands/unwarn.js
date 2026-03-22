@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, StringSelectMenuBuilder, ComponentType, MessageFlags } from 'discord.js';
-import fs from 'fs';
+import { safeReadJSON, safeWriteJSON } from '../utils.js';
 import path from 'path';
 import { hasModPermission } from '../config.js';
 import { addLog } from '../logger.js';
@@ -7,16 +7,11 @@ import { addLog } from '../logger.js';
 const warningsPath = path.resolve('warnings.json');
 
 function getWarnings() {
-    if (!fs.existsSync(warningsPath)) return {};
-    try {
-        return JSON.parse(fs.readFileSync(warningsPath, 'utf-8'));
-    } catch (e) {
-        return {};
-    }
+    return safeReadJSON(warningsPath, {});
 }
 
 function saveWarnings(warnings) {
-    fs.writeFileSync(warningsPath, JSON.stringify(warnings, null, 2));
+    return safeWriteJSON(warningsPath, warnings);
 }
 
 export const data = new SlashCommandBuilder()

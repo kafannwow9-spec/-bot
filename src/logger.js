@@ -1,33 +1,41 @@
-import fs from 'fs';
+import { safeReadJSON, safeWriteJSON } from './utils.js';
 import path from 'path';
 
 const logsPath = path.resolve('logs.json');
 const configPath = path.resolve('log-config.json');
 
+/**
+ * Retrieves the current logs.
+ * @returns {object} - The logs object.
+ */
 export function getLogs() {
-    if (!fs.existsSync(logsPath)) return {};
-    try {
-        return JSON.parse(fs.readFileSync(logsPath, 'utf-8'));
-    } catch (e) {
-        return {};
-    }
+    return safeReadJSON(logsPath, {});
 }
 
+/**
+ * Retrieves the log configuration.
+ * @returns {object} - The log configuration object.
+ */
 export function getLogConfig() {
-    if (!fs.existsSync(configPath)) return {};
-    try {
-        return JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-    } catch (e) {
-        return {};
-    }
+    return safeReadJSON(configPath, {});
 }
 
+/**
+ * Saves the logs.
+ * @param {object} data - The logs object to save.
+ * @returns {boolean} - True if successful, false otherwise.
+ */
 export function saveLogs(data) {
-    fs.writeFileSync(logsPath, JSON.stringify(data, null, 2));
+    return safeWriteJSON(logsPath, data);
 }
 
+/**
+ * Saves the log configuration.
+ * @param {object} data - The log configuration object to save.
+ * @returns {boolean} - True if successful, false otherwise.
+ */
 export function saveLogConfig(data) {
-    fs.writeFileSync(configPath, JSON.stringify(data, null, 2));
+    return safeWriteJSON(configPath, data);
 }
 
 export async function addLog(guild, type, details) {

@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits, MessageFlags, ContainerBuilder, ChannelType } from 'discord.js';
+import { SlashCommandBuilder, PermissionFlagsBits, MessageFlags, ChannelType, EmbedBuilder } from 'discord.js';
 import { getLogs, getLogConfig, saveLogConfig } from '../logger.js';
 
 export const data = new SlashCommandBuilder()
@@ -79,59 +79,57 @@ export async function execute(interaction) {
         }
 
         const lastLogs = filteredLogs.slice(-10).reverse();
-        const container = new ContainerBuilder();
-        
-        container.addTextDisplayComponents((text) => 
-            text.setContent(`**__ســجـلات الـنـظــام__**`)
-        );
+        const embed = new EmbedBuilder()
+            .setTitle('**__ســجـلات الـنـظــام__**')
+            .setColor(0x2f3136);
 
+        let description = '';
         for (const log of lastLogs) {
-            container.addTextDisplayComponents((text) => text.setContent('————————————————'));
+            description += '————————————————\n';
             
             let logText = '';
             const time = new Date(log.timestamp).toLocaleString('ar-EG', { timeZone: 'UTC' });
 
             if (log.type === 'timeout' || log.type === 'untimeout') {
                 const action = log.type === 'timeout' ? 'إعـطــاء تــايـم' : 'إزالـة تــايـم';
-                logText = `مــعــلـومـــات الـتــايـم\n` +
+                logText = `**مــعــلـومـــات الـتــايـم**\n` +
                           `- الإجــراء: ${action}\n` +
                           `- الإداري: <@${log.adminId}>\n` +
                           `- الـعـضـو: <@${log.targetId}>\n` +
                           (log.duration ? `- الـمـدة: ${log.duration}\n` : '') +
                           `- الـسـبـب: ${log.reason}\n` +
-                          `- الـوقــت: ${time}`;
+                          `- الـوقــت: ${time}\n`;
             } else if (log.type === 'warn' || log.type === 'unwarn') {
                 const action = log.type === 'warn' ? 'تـحـذيـر' : 'إزالـة تـحـذيـر';
-                logText = `مــعــلـومـــات الـتـحـذيــر\n` +
+                logText = `**مــعــل_ومـــات الـتـحـذيــر**\n` +
                           `- الإجــراء: ${action}\n` +
                           `- الإداري: <@${log.adminId}>\n` +
                           `- الـعـضـو: <@${log.targetId}>\n` +
-                          `- الـسـبـب: ${log.reason}\n` +
-                          `- الـوقــت: ${time}`;
+                          `- الـسـب_ب: ${log.reason}\n` +
+                          `- الـوقــت: ${time}\n`;
             } else if (log.type === 'ban' || log.type === 'unban') {
                 const action = log.type === 'ban' ? 'بــان' : 'إزالـة بــان';
-                logText = `مــعــلـومـــات الـبــان\n` +
+                logText = `**مــعــلـومـــات الـبــان**\n` +
                           `- الإجــراء: ${action}\n` +
                           `- الإداري: <@${log.adminId}>\n` +
                           `- الـعـضـو: <@${log.targetId}>\n` +
                           `- الـسـبـب: ${log.reason}\n` +
-                          `- الـوقــت: ${time}`;
+                          `- الـوقــت: ${time}\n`;
             } else if (log.type === 'send') {
-                logText = `مــعــلـومـــات الإرســال\n` +
+                logText = `**مــعــلـومـــات الإرســال**\n` +
                           `- الإداري: <@${log.adminId}>\n` +
                           `- الـنـوع: ${log.sendType === 'message' ? 'رسالة' : 'إيمبد'}\n` +
                           `- الـمـحـتـوى: ${log.content.substring(0, 100)}${log.content.length > 100 ? '...' : ''}\n` +
-                          `- الـوقــت: ${time}`;
+                          `- الـوقــت: ${time}\n`;
             }
 
-            if (logText) {
-                container.addTextDisplayComponents((text) => text.setContent(logText));
-            }
+            description += logText;
         }
 
+        embed.setDescription(description);
+
         await interaction.editReply({
-            components: [container],
-            flags: MessageFlags.IsComponentsV2
+            embeds: [embed]
         });
     }
 }

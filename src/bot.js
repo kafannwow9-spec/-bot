@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Collection, REST, Routes, ActivityType, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, StringSelectMenuBuilder, PermissionFlagsBits, MessageFlags, EmbedBuilder, ContainerBuilder } from 'discord.js';
+import { Client, GatewayIntentBits, Collection, REST, Routes, ActivityType, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, StringSelectMenuBuilder, PermissionFlagsBits, MessageFlags, EmbedBuilder } from 'discord.js';
 import * as ban from './commands/ban.js';
 import * as unban from './commands/unban.js';
 import * as timeout from './commands/timeout.js';
@@ -22,13 +22,14 @@ import ms from 'ms';
 async function updateAbbreviationsMessage(interaction) {
     try {
         const abbrevs = getAbbreviations();
-        const container = abbreviations.createAbbreviationsContainer(abbrevs);
+        const embed = abbreviations.createAbbreviationsEmbed(abbrevs);
         
         // The original message is interaction.message
         if (interaction.message) {
             await interaction.message.edit({
-                components: [container, interaction.message.components[1]],
-                flags: MessageFlags.IsComponentsV2
+                embeds: [embed],
+                components: interaction.message.components,
+                flags: MessageFlags.Ephemeral
             });
         }
     } catch (error) {
@@ -214,7 +215,7 @@ export async function startBot(token, clientId) {
 
                         const embed = new EmbedBuilder()
                             .setTitle('**__تــحــديـث الـســتـريـك<:Streak:1483068555514744902> __**')
-                            .setDescription(`- **<:Streak:1483068555514744902>  — ${streakResult.count}**\n- **( ${shieldsDisplay} ) — ${usedCount}**`)
+                            .setDescription(`- **الـعـضـو: <@${message.author.id}>**\n- **الـسـتـريـك: <:Streak:1483068555514744902> — ${streakResult.count}**\n- **الـدروع: ( ${shieldsDisplay} ) — ${usedCount}**`)
                             .setColor(0x00ff00);
 
                         await channel.send({

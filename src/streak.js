@@ -1,19 +1,23 @@
-import fs from 'fs';
+import { safeReadJSON, safeWriteJSON } from './utils.js';
 import path from 'path';
 
 const streakPath = path.resolve('streak.json');
 
+/**
+ * Retrieves the current streak data.
+ * @returns {object} - The streak data object.
+ */
 export function getStreakData() {
-    if (!fs.existsSync(streakPath)) return {};
-    try {
-        return JSON.parse(fs.readFileSync(streakPath, 'utf-8'));
-    } catch (e) {
-        return {};
-    }
+    return safeReadJSON(streakPath, {});
 }
 
+/**
+ * Saves the streak data.
+ * @param {object} data - The streak data object to save.
+ * @returns {boolean} - True if successful, false otherwise.
+ */
 export function saveStreakData(data) {
-    fs.writeFileSync(streakPath, JSON.stringify(data, null, 2));
+    return safeWriteJSON(streakPath, data);
 }
 
 export function updateStreak(guildId, userId) {

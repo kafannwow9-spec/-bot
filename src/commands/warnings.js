@@ -1,17 +1,12 @@
 import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, MessageFlags } from 'discord.js';
-import fs from 'fs';
+import { safeReadJSON } from '../utils.js';
 import path from 'path';
 import { hasModPermission } from '../config.js';
 
 const warningsPath = path.resolve('warnings.json');
 
 function getWarnings() {
-    if (!fs.existsSync(warningsPath)) return {};
-    try {
-        return JSON.parse(fs.readFileSync(warningsPath, 'utf-8'));
-    } catch (e) {
-        return {};
-    }
+    return safeReadJSON(warningsPath, {});
 }
 
 export const data = new SlashCommandBuilder()
