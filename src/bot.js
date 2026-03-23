@@ -38,7 +38,7 @@ async function updateAbbreviationsMessage(interaction) {
     }
 }
 
-const client = new Client({
+export const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMembers,
@@ -199,7 +199,7 @@ export async function startBot(token, clientId) {
         if (message.author.bot || !message.guild) return;
 
         // Streak Logic
-        const streakResult = updateStreak(message.guildId, message.author.id);
+        const streakResult = updateStreak(message.guildId, message.author.id, message.channelId);
         if (streakResult) {
             const sendStreak = async () => {
                 try {

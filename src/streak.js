@@ -20,12 +20,15 @@ export function saveStreakData(data) {
     return safeWriteJSON(streakPath, data);
 }
 
-export function updateStreak(guildId, userId) {
+export function updateStreak(guildId, userId, messageChannelId) {
     const data = getStreakData();
     if (!data[guildId]) data[guildId] = { channelId: null, users: {} };
     
     const guildData = data[guildId];
     if (!guildData.channelId) return null; // No streak channel set
+    
+    // Check if the message was sent in the designated streak channel
+    if (messageChannelId !== guildData.channelId) return null;
 
     const today = new Date().toISOString().split('T')[0];
     const userStreak = guildData.users[userId] || { 
@@ -96,7 +99,12 @@ export function updateStreak(guildId, userId) {
     }
 
     guildData.users[userId] = userStreak;
-    saveStreakData(data);
+    const saved = saveStreakData(data);
+
+    if (!saved) {
+        console.warn(`[Streak] Failed to save streak for user ${userId} in guild ${guildId}. Skipping message to prevent spam.`);
+        return null;
+    }
 
     // Return streak info to send message
     return {
